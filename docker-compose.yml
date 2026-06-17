@@ -1,0 +1,9 @@
+services:
+  webservice-reclut:
+    build: .
+    container_name: webservice-reclut
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - ./cache:/var/www/html/cache   # caché persiste fuera del contenedor

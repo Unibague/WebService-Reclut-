@@ -1,0 +1,8 @@
+RewriteEngine On
+
+# Redirigir todo al index.php preservando query string
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^(.*)$ index.php [QSA,L]
+
+# Bloquear acceso directo al directorio de caché
+RewriteRule ^cache/ - [F,L]
