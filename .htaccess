@@ -6,3 +6,7 @@ RewriteRule ^(.*)$ index.php [QSA,L]
 
 # Bloquear acceso directo al directorio de caché
 RewriteRule ^cache/ - [F,L]
+
+# Bloquear acceso directo a archivos de configuración/entorno
+RewriteRule ^\.env - [F,L]
+RewriteRule ^\.env\.example - [F,L]

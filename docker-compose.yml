@@ -3,6 +3,8 @@ services:
     build: .
     container_name: webservice-reclut
     restart: unless-stopped
+    env_file:
+      - .env   # ver .env.example — no se sube al repositorio
     ports:
       - "8080:80"
     volumes:

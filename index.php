@@ -6,7 +6,10 @@ require_once __DIR__ . '/career_ids.php';
 
 // ── Headers ──────────────────────────────────────────────────────────────────
 header('Content-Type: application/json; charset=utf-8');
-header('Access-Control-Allow-Origin: *');
+applyCorsHeaders();
+
+// ── Autenticación (API key) ───────────────────────────────────────────────────
+requireApiKey();
 
 // ── Parámetro de búsqueda ─────────────────────────────────────────────────────
 $identification = trim($_GET['identification'] ?? '');
@@ -266,4 +269,47 @@ function normalizePhone(string $phone): ?string
 {
     $phone = trim($phone);
     return ($phone === '' || $phone === '0') ? null : $phone;
+}
+
+/**
+ * Envía el header CORS según REQLUT_ALLOWED_ORIGINS.
+ * "*" permite cualquier origen; una lista separada por comas solo
+ * habilita el origen exacto que envíe el cliente (con Vary: Origin).
+ */
+function applyCorsHeaders(): void
+{
+    if (REQLUT_ALLOWED_ORIGINS === '*') {
+        header('Access-Control-Allow-Origin: *');
+        return;
+    }
+
+    $allowed = array_map('trim', explode(',', REQLUT_ALLOWED_ORIGINS));
+    $origin  = $_SERVER['HTTP_ORIGIN'] ?? '';
+
+    if ($origin !== '' && in_array($origin, $allowed, true)) {
+        header('Access-Control-Allow-Origin: ' . $origin);
+        header('Vary: Origin');
+    }
+    // Si el origen no está en la lista (o no viene, p. ej. llamadas
+    // servidor-a-servidor), simplemente no se envía el header CORS.
+}
+
+/**
+ * Exige una API key válida en el header "X-Api-Key" o el parámetro
+ * "api_key" cuando WEBSERVICE_API_KEY está configurada. Si no está
+ * configurada, el endpoint queda abierto (compatibilidad hacia atrás).
+ */
+function requireApiKey(): void
+{
+    if (WEBSERVICE_API_KEY === '') {
+        return;
+    }
+
+    $provided = $_SERVER['HTTP_X_API_KEY'] ?? ($_GET['api_key'] ?? '');
+
+    if (!hash_equals(WEBSERVICE_API_KEY, (string)$provided)) {
+        http_response_code(401);
+        echo json_encode(['error' => 'API key inválida o ausente']);
+        exit;
+    }
 }
