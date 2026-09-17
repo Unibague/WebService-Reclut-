@@ -13,7 +13,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     env:
-      WORKSPACE_PATH: "/var/www/WebService-Reclut-"
+      WORKSPACE_PATH: "/var/www/WebService-Reclut"
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
@@ -86,11 +86,11 @@ jobs:
       run: |
         sshpass -p "$INTERNAL_SSH_PASSWORD" ssh -o StrictHostKeyChecking=no "$INTERNAL_USER@$INTERNAL_RESOURCE_IP" '
           echo "SSH connection successful"
+          set -euo pipefail
           cd "'"$WORKSPACE_PATH"'" || exit;
-          if [ -f package.json ]; then
-            npm install;
-            npm run prod;
-          else
-            echo "Error: package.json not found in '"${WORKSPACE_PATH}"'"
-            exit 1;
-          fi'
+          if [ -n "$(docker compose ps -q)" ]; then
+            echo "Containers detected, shutting down..."
+            docker compose down
+          fi
+          docker compose up -d --build
+          docker image prune -f'
