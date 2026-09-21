@@ -182,18 +182,22 @@ function buildCareer(array $record): array
  * Determina el tipo de carrera Reqlut usando la formación y el nombre del programa.
  *
  * Tabla Unibagué → Reqlut:
- *   formation 4 = Pregrado              → type 1 (Undergraduate)
- *   formation 5 = Especialización       → type 6 (Specialty)
- *              = Ciclo Coterminal       → type 10 (Postgraduate Program)
- *              = Cursos Libres Posgrado → type 2 (Course)
- *   formation 6 = Maestría              → type 4 (Master's)
+ *   formation 4 = Pregrado              → type 1  (Undergraduate)
+ *   formation 5 = Doctorado             → type 10 (Postgraduate Program, requiere id)
+ *              = Ciclo Coterminal       → type 10 (Postgraduate Program, requiere id)
+ *              = Especialización       → type 10 (Postgraduate Program, requiere id)
+ *              = Cursos Libres Posgrado → type 2  (Course)
+ *   formation 6 = Maestría              → type 10 (Postgraduate Program, requiere id)
+ *
+ * Los 42 programas de posgrado del catálogo Reqlut están declarados como
+ * type 10; su enlace depende de enviar también el program_code (ver buildCareer).
  */
 function resolveCareerType(int $formation, string $program): int
 {
     $p = strtoupper($program);
 
     if ($formation === 6 || str_contains($p, 'MAESTRIA') || str_contains($p, 'MAESTRÍA')) {
-        return 4; // Master's
+        return 10; // Postgraduate Program (Master's)
     }
 
     if ($formation === 4) {
@@ -201,17 +205,17 @@ function resolveCareerType(int $formation, string $program): int
     }
 
     // formation 5 — distinguir por nombre
-    if (str_contains($p, 'DOCTORADO')) {
-        return 5;
-    }
-    if (str_contains($p, 'CICLO COTERMINAL')) {
-        return 10; // Postgraduate Program (requiere id)
-    }
-    if (str_contains($p, 'ESPECIALIZACION') || str_contains($p, 'ESPECIALIZACIÓN') || str_contains($p, 'ESP.')) {
-        return 6; // Specialty
-    }
     if (str_contains($p, 'CURSOS LIBRES') || str_contains($p, 'DIPLOMADO')) {
         return 2; // Course
+    }
+    if (str_contains($p, 'DOCTORADO')) {
+        return 10; // Postgraduate Program (Doctorate)
+    }
+    if (str_contains($p, 'CICLO COTERMINAL')) {
+        return 10; // Postgraduate Program (Ciclo Coterminal)
+    }
+    if (str_contains($p, 'ESPECIALIZACION') || str_contains($p, 'ESPECIALIZACIÓN') || str_contains($p, 'ESP.')) {
+        return 10; // Postgraduate Program (Especialización)
     }
 
     return 7; // Other
