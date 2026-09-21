@@ -23,11 +23,14 @@ $CAREER_ID_MAP = [
 /**
  * Retorna el ID de Reqlut para un código de programa de Unibagué.
  * Si aún no hay mapeo oficial, retorna el program_code como fallback.
+ *
+ * Viaja siempre como texto: varios códigos de posgrado incluyen letras
+ * (p. ej. "1G") y una conversión a entero los trunca.
  */
-function resolveReqlutCareerID(string $programCode): int
+function resolveReqlutCareerID(string $programCode): string
 {
     global $CAREER_ID_MAP;
     return isset($CAREER_ID_MAP[$programCode])
-        ? $CAREER_ID_MAP[$programCode]
-        : (int)$programCode;
+        ? (string)$CAREER_ID_MAP[$programCode]
+        : $programCode;
 }

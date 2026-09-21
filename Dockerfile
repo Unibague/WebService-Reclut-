@@ -13,4 +13,11 @@ COPY . .
 # Crea el directorio de caché con permisos de escritura para Apache
 RUN mkdir -p cache && chown -R www-data:www-data cache && chmod 755 cache
 
+# cache/ se monta como bind mount en docker-compose.yml, lo que sobrescribe
+# los permisos de arriba con los del host. El entrypoint los repara en cada
+# arranque del contenedor.
+RUN chmod +x docker-entrypoint.sh
+ENTRYPOINT ["./docker-entrypoint.sh"]
+
 EXPOSE 80
+CMD ["apache2-foreground"]

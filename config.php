@@ -1,6 +1,14 @@
 <?php
 declare(strict_types=1);
 
+// ── Manejo de errores ──────────────────────────────────────────────────────
+// Nunca mostrar errores/warnings en el cuerpo de la respuesta: rompería el
+// JSON y, si se imprimen antes de un http_response_code(), fuerzan el envío
+// de headers con el status por defecto (200) impidiendo cambiarlo después.
+ini_set('display_errors', '0');
+ini_set('log_errors', '1');
+error_reporting(E_ALL);
+
 /**
  * Carga variables desde un archivo .env (formato KEY=VALUE) si existe.
  * No sobrescribe variables que ya estén definidas en el entorno real

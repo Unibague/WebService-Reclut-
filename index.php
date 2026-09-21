@@ -57,8 +57,8 @@ exit;
  */
 function loadStudents(): array
 {
-    if (!is_dir(CACHE_DIR)) {
-        mkdir(CACHE_DIR, 0755, true);
+    if (!is_dir(CACHE_DIR) && !@mkdir(CACHE_DIR, 0755, true)) {
+        error_log("No se pudo crear el directorio de caché " . CACHE_DIR . " (revisar permisos)");
     }
 
     $cacheFile = CACHE_DIR . '/students.json';
@@ -100,7 +100,9 @@ function loadStudents(): array
         exit;
     }
 
-    file_put_contents($cacheFile, $data, LOCK_EX);
+    if (@file_put_contents($cacheFile, $data, LOCK_EX) === false) {
+        error_log("No se pudo escribir la caché en $cacheFile (revisar permisos del directorio)");
+    }
     return $students;
 }
 
@@ -145,7 +147,7 @@ function buildCareer(array $record): array
     $programName = $record['program']            ?? '';
     $status      = $record['status']             ?? '';
     $code        = $record['code_student']       ?? '';
-    $programCode = (int)($record['program_code'] ?? 0);
+    $programCode = (string)($record['program_code'] ?? '');
 
     $type   = resolveCareerType($formation, $programName);
     $state  = resolveCareerState($status);
@@ -170,7 +172,7 @@ function buildCareer(array $record): array
 
     // Para tipos 1 y 10, Reqlut exige el campo id (código numérico del programa)
     if ($type === 1 || $type === 10) {
-        $career['id'] = resolveReqlutCareerID((string)$programCode);
+        $career['id'] = resolveReqlutCareerID($programCode);
     } else {
         $career['programName'] = $programName;
     }
